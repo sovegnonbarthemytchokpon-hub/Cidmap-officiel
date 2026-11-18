@@ -1,0 +1,130 @@
+/*
+ * Directional rules shared by every locale.
+ * The Arabic catalog is the first RTL-ready locale; other RTL languages can
+ * reuse the same document-level switch without changing component markup.
+ */
+html[dir="rtl"] body,
+body.cid-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .site-header .actions,
+html[dir="rtl"] .category-bar,
+html[dir="rtl"] .modal-actions,
+html[dir="rtl"] .top-actions {
+  direction: rtl;
+}
+
+html[dir="rtl"] [data-i18n],
+html[dir="rtl"] .modal-title,
+html[dir="rtl"] .modal-body {
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat,
+html[dir="rtl"] .cid-virtual-chat .support-chat-thread,
+html[dir="rtl"] .cid-virtual-chat .support-chat-compose,
+html[dir="rtl"] .cid-virtual-chat .cid-virtual-attachment-tray {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat .support-chat-message,
+html[dir="rtl"] .cid-virtual-chat .cid-pending-confirmation {
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat .is-user {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+html[dir="rtl"] .cid-virtual-chat .cid-virtual-chat-back svg {
+  transform: scaleX(-1);
+}
+
+/* Language chooser rows: flag | name + detail | action, never concatenated. */
+#langList.lang-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  max-height: 52vh;
+  overflow: auto;
+  padding-inline-end: 6px;
+}
+
+.lang-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.lang-option:hover,
+.lang-option:focus-visible {
+  border-color: #0962d6;
+}
+
+.lang-option.is-selected {
+  border-color: #0962d6;
+  background: #f1f6ff;
+}
+
+.lang-option-flag {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.lang-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lang-option-name {
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lang-option-detail {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.65;
+}
+
+.lang-option-action {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0962d6;
+  white-space: nowrap;
+}
+
+.lang-option.is-selected .lang-option-action {
+  color: #1a7f37;
+}
+
+.lang-option-empty {
+  margin: 4px 0;
+  font-size: 13px;
+  opacity: 0.7;
+}

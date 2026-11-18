@@ -1,0 +1,75 @@
+# The Matrice du jour is public content. Visitors must be able to invoke the
+# function without signing in; the browser still sends the Supabase
+# publishable/anon key through supabase.functions.invoke().
+[functions.smart-function]
+verify_jwt = false
+
+[functions.subscription-access]
+# Public catalogue reads are anonymous; the function itself validates a user
+# JWT before returning balances or accepting any mutation.
+verify_jwt = false
+
+[functions.dechiffrement-mt]
+verify_jwt = false
+
+[functions.rejected-balls]
+verify_jwt = false
+
+[functions.calcul-lnb]
+verify_jwt = false
+
+[functions.calcul-balsa]
+verify_jwt = false
+
+[functions.calcul-oracle]
+verify_jwt = false
+
+[functions.calcul-intuition]
+verify_jwt = false
+
+[functions.calcule-universelle]
+  verify_jwt = false
+
+[functions.calcul-standby]
+verify_jwt = false
+
+[functions.calcul-robot]
+verify_jwt = false
+
+[functions.result-helf]
+# Public reads/submissions are accepted here; administrative actions are
+# authenticated again inside the function with the service-role client.
+verify_jwt = false
+
+[functions.support-chat]
+verify_jwt = false
+
+; regen-daily recomputes the daily_*_programs archives at the 16:00 Abidjan
+; boundary on a server-side schedule. The pg_cron HTTP call must reach it
+; without a user JWT; the CRON_TOKEN secret header provides the real gate.
+[functions.regen-daily]
+verify_jwt = false
+
+[functions.regen-standby]
+verify_jwt = false
+
+[functions.admin-method-control]
+verify_jwt = true
+
+[functions.program-runner]
+verify_jwt = false
+
+# The payment function validates the visitor token itself so it can return a
+# useful JSON error to the Vanilla JS checkout instead of a gateway HTML body.
+[functions.create-paystack-payment]
+verify_jwt = false
+
+# Paystack signs the raw request body itself. The function validates
+# x-paystack-signature with PAYSTACK_SECRET_KEY before touching Supabase.
+[functions.paystack-webhook]
+verify_jwt = false
+
+# The browser may ask for the status of its own reference after returning
+# from Paystack; the function verifies the Supabase user JWT and ownership.
+[functions.paystack-payment-status]
+verify_jwt = false

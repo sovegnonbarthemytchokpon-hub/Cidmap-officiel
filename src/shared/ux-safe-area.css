@@ -1,0 +1,192 @@
+/*
+ * Final UX safety contract — loaded after every other stylesheet.
+ *
+ * 1. Bottom navigation clearance.
+ *    The floating bottom bar covered the last controls of several routes
+ *    ("Déchiffrer maintenant", "Voir les boules rejetées des autres pays",
+ *    the like/share row of the last card…). Each route used to compute its
+ *    own reserve and a few ended just a dozen pixels above the bar. Every
+ *    scroll owner now keeps one shared reserve that is always taller than
+ *    the bar, its gap and the iOS home indicator. The doubled id selector
+ *    outranks the older per-route `body[data-…] #id` rules.
+ *
+ * 2. Notification and dialog layering.
+ *    Details open as a fixed full-screen layer centred in the visible
+ *    viewport, above the bottom bar (same 100000 layer as payment dialogs),
+ *    whatever the scroll position of the list behind them. Every open
+ *    modal overlay (payments, unlocks, referral, results) follows the same
+ *    centred flex contract.
+ */
+
+:root {
+  /* Never less than 120px; the iOS home indicator is added on top. */
+  --cid-ux-bottom-clearance: max(120px, calc(120px + env(safe-area-inset-bottom, 0px)));
+}
+
+html:not(.cid-soft-keyboard-open)
+  body:not(.cid-account-chat-active):not([data-cid-dedicated-view="virtual-assistant"])
+  :is(
+    main,
+    .page-content,
+    .scroll-container,
+    .cid-layout-surface,
+    #results#results,
+    #categoriesView#categoriesView,
+    #tableauxViewContainer#tableauxViewContainer,
+    #matrixCalculatorPanel#matrixCalculatorPanel,
+    #profileViewContainer#profileViewContainer,
+    #anticipationViewContainer#anticipationViewContainer,
+    #resultatAideViewContainer#resultatAideViewContainer,
+    #globalStatisticsViewContainer#globalStatisticsViewContainer,
+    #historyViewContainer#historyViewContainer,
+    #notificationCenter#notificationCenter,
+    [id$="ViewContainer"]:not(#croixViewContainer)
+  ) {
+  padding-bottom: var(--cid-ux-bottom-clearance) !important;
+  scroll-padding-bottom: var(--cid-ux-bottom-clearance) !important;
+}
+
+/* The Croix archive already reserved more room for its card actions. */
+html:not(.cid-soft-keyboard-open)
+  body #croixViewContainer#croixViewContainer {
+  padding-bottom: max(
+    var(--cid-ux-bottom-clearance),
+    calc(148px + env(safe-area-inset-bottom, 0px))
+  ) !important;
+  scroll-padding-bottom: var(--cid-ux-bottom-clearance) !important;
+}
+
+/* ---------------------------------------------------------------- */
+/* Notification detail: centred full-screen modal.                   */
+/* ---------------------------------------------------------------- */
+
+.notification-detail,
+body > .notification-detail {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: var(--cid-visual-height, 100dvh) !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  padding:
+    max(16px, env(safe-area-inset-top, 0px))
+    max(14px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px))
+    max(14px, env(safe-area-inset-left, 0px)) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  background: rgba(15, 23, 42, .62) !important;
+  animation: cid-ux-backdrop-in .16s ease-out both;
+}
+
+.notification-detail .notification-detail-card {
+  width: min(100%, 460px) !important;
+  max-height: calc(var(--cid-visual-height, 100dvh) - 32px);
+  margin: auto !important;
+  align-self: center !important;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 16px 18px 20px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .28) !important;
+}
+
+@keyframes cid-ux-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- */
+/* Every open modal overlay: centred full-screen layer.              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Only overlays that are currently shown are forced to flex, so a
+ * [hidden] attribute or an inline `display: none` still closes them.
+ */
+.modal-overlay:is(.open, [style*="display: flex"], [style*="display:flex"],
+  [style*="display: block"], [style*="display:block"]):not([hidden]):not([style*="display: none"]):not([style*="display:none"]),
+.cid-payment-overlay:not([hidden]):not([style*="display: none"]):not([style*="display:none"]),
+.cid-referral-dialog:not([hidden]),
+.resultat-aide-result-modal:not([hidden]),
+.matrix-calc-results-modal:not([hidden]) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: var(--cid-visual-height, 100dvh) !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overscroll-behavior: contain;
+}
+
+/* Flex children would otherwise shrink to their content width. */
+.cid-referral-dialog:not([hidden]) > *,
+.matrix-calc-results-modal:not([hidden]) > .matrix-calc-results-dialog {
+  flex: 0 1 auto;
+  max-height: 100%;
+}
+
+.resultat-aide-result-modal:not([hidden]) > :not(.resultat-aide-result-modal-backdrop) {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------- */
+/* Universal back button inside dialogs (top-left).                  */
+/* ---------------------------------------------------------------- */
+
+.cid-modal-back,
+.notification-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  margin: 0 0 10px -6px;
+  padding: 6px 12px 6px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f4f8;
+  color: #172033;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cid-modal-back svg,
+.notification-detail-back svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+}
+
+.cid-modal-back:hover,
+.cid-modal-back:focus-visible,
+.notification-detail-back:hover,
+.notification-detail-back:focus-visible {
+  background: #e4e9f0;
+  outline: none;
+}
+
+.cid-modal-back:active,
+.notification-detail-back:active {
+  opacity: .72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-detail {
+    animation: none;
+  }
+}

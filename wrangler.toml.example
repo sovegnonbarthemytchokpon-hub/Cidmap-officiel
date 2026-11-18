@@ -1,0 +1,17 @@
+name = "cidmap-api"
+main = "server.js"
+compatibility_date = "2026-09-19"
+
+# Crée d'abord une base D1 Cloudflare, puis remplace DATABASE_ID.
+[[d1_databases]]
+binding = "DB"
+database_name = "cidmap"
+database_id = "DATABASE_ID"
+
+# Le binding AI est utilisé par le chat serveur lorsque l'option est activée.
+# Les secrets Supabase restent des secrets Cloudflare, jamais des variables
+# publiques du frontend.
+
+[vars]
+CIDMAP_SUPABASE_URL = "https://PROJECT_REF.supabase.co"
+

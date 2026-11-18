@@ -1,0 +1,12 @@
+name = "cidmap-api"
+main = "server.js"
+compatibility_date = "2026-09-19"
+account_id = "1bb1adac8abeef1cebaabb2a85a4b5c3"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cidmap"
+database_id = "61fe2c9d-d45d-4493-98d3-cbd1aa993951"
+
+[vars]
+CIDMAP_SUPABASE_URL = "https://vgebpqzyawnoezgarmfn.supabase.co"

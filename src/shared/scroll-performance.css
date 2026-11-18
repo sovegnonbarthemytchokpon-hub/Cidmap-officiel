@@ -1,0 +1,130 @@
+/*
+ * Scroll performance contract.
+ *
+ * Every route is a fixed, independently scrollable surface (see
+ * code-freeze.css). This sheet only adds the compositor hints that keep those
+ * surfaces smooth on mobile; it never changes their geometry.
+ *
+ * `will-change: transform` is deliberately NOT applied to the surfaces: a
+ * transformed ancestor becomes the containing block of its `position: fixed`
+ * descendants, which would pin every in-view overlay (payment sheets,
+ * Tableaux modals, account workspace) to the scrolled content instead of the
+ * viewport. `will-change: scroll-position` gives the browser the same
+ * "promote this scroller" hint without that side effect, and heavy off-screen
+ * cards opt into `content-visibility: auto` instead.
+ */
+
+.cid-layout-surface,
+#results,
+#categoriesView,
+#croixViewContainer,
+#tableauxViewContainer,
+#matrixCalculatorPanel,
+#profileViewContainer,
+#anticipationViewContainer,
+#resultatAideViewContainer,
+#globalStatisticsViewContainer,
+#virtualAssistantViewContainer,
+#historyViewContainer,
+#notificationCenter {
+  /* overflow-y: auto is already enforced per route by code-freeze.css. */
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  scroll-behavior: auto;
+  /* Vertical panning is handled by the browser without waiting on scripts;
+     pinch-zoom stays available for reading the numbers. */
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior-y: contain;
+}
+
+/* Tableaux grids, satellite tables and the draggable Croix also pan sideways
+   (same rule as scroll-stability.js applies to the document on Croix). */
+#tableauxViewContainer,
+#croixViewContainer,
+#historyViewContainer {
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/*
+ * No backdrop blur anywhere. A blurred fixed header, bottom bar or overlay
+ * forces the GPU to re-blur everything that scrolls beneath it on every
+ * frame, which is what made modest phones skip frames or freeze. Surfaces
+ * that relied on it now use near-opaque rgba colours in their own
+ * stylesheets; this rule keeps a future rule or inline style from bringing
+ * the cost back.
+ */
+*,
+*::before,
+*::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/*
+ * Off-screen publications skip layout and paint until they approach the
+ * viewport. `auto` in contain-intrinsic-size remembers the real height after
+ * the first render, so the scrollbar does not jump. Only the older days of
+ * the feed and the lower Anticipé cards opt in; Croix and Tableaux cards are
+ * excluded because their number fitting measures the live geometry.
+ */
+#cid-home-feed > .cid-fb-post.is-historical:not([data-post-type="cross"]),
+.anticipation-feed > [data-anticipation-feature]:nth-child(n + 3):not([data-anticipation-feature="croix"]):not([data-anticipation-feature^="tableaux-"]) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/*
+ * Instant taps everywhere. `manipulation` removes the ~300 ms double-tap-zoom
+ * wait on every interactive element (buttons, links, category tiles, cards,
+ * tabs) while keeping panning and pinch-zoom; the grey iOS tap flash is
+ * replaced by each component's own :active state.
+ */
+a,
+button,
+summary,
+label,
+select,
+input[type="button"],
+input[type="submit"],
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[data-category],
+.category-item,
+.category-card,
+.categories-grid > *,
+.cid-fb-post,
+.tableaux-history-button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Universal back affordance: instant tap response, no double-tap zoom delay. */
+.cid-back-button,
+[data-cid-back-button],
+#cidSectionBack {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.cid-back-button:active,
+[data-cid-back-button]:active,
+#cidSectionBack:active {
+  opacity: .72;
+}
+
+/* Low-end devices: drop decorative motion that competes with scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  .cid-layout-surface *,
+  #results *,
+  #anticipationViewContainer *,
+  #tableauxViewContainer * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

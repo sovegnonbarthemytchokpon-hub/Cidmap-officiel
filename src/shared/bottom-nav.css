@@ -1,0 +1,208 @@
+/*
+ * Persistent bottom navigation — final contract.
+ *
+ * Loaded after every other stylesheet. Older layers hid the bar whenever a
+ * view flagged "keyboard open" (matrix-keyboard-open, cid-keyboard-input-active).
+ * Those flags could stay set after the keyboard closed (for example after
+ * tapping "Calculer" in Déchiffrement MT, or after returning from the Google
+ * sign-in page), leaving the visitor without any way to leave the screen.
+ *
+ * The bar now has one rule: it is always on screen, except while the soft
+ * keyboard is really visible (html.cid-soft-keyboard-open, measured by
+ * bottom-nav-guard.js) or inside the few full-screen workspaces that provide
+ * their own close/back control.
+ */
+
+:root {
+  --cid-nav-height: 58px;
+  --cid-nav-gap: 8px;
+  --cid-freeze-nav-bottom-gap: var(--cid-nav-gap);
+  --cid-freeze-content-clearance: 12px;
+}
+
+@media (max-width: 359px) {
+  :root {
+    --cid-nav-height: 54px;
+    --cid-nav-gap: 6px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  :root {
+    --cid-nav-height: 48px;
+    --cid-nav-gap: 4px;
+  }
+}
+
+html:not(.cid-soft-keyboard-open)
+  body:not(.cid-admin-active):not(.cid-account-chat-active):not([data-cid-dedicated-view="virtual-assistant"])
+  .category-bar {
+  display: flex !important;
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  /* A small visual-viewport correction is kept for Safari, but it is capped
+     so an inconsistent measurement can never push the bar off screen. */
+  bottom: calc(
+    var(--cid-nav-gap) + env(safe-area-inset-bottom, 0px) -
+    min(var(--cid-visual-bottom-extension, 0px), 24px)
+  ) !important;
+  width: min(calc(100% - 16px), 460px) !important;
+  max-width: 460px !important;
+  height: var(--cid-nav-height) !important;
+  min-height: var(--cid-nav-height) !important;
+  max-height: var(--cid-nav-height) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateX(-50%) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transition: transform 180ms ease, opacity 140ms ease !important;
+}
+
+/* Only a visible soft keyboard may temporarily slide the bar away. */
+html.cid-soft-keyboard-open body .category-bar {
+  transform: translate(-50%, 130%) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.category-bar .inner {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 4px !important;
+  gap: 2px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  justify-content: space-between !important;
+}
+
+/*
+ * Five equal slots that always fit the phone width. Every slot is the same
+ * vertical flex stack: one icon box (max 24 px) above one label line, so
+ * "Accueil", "Tableaux", "Catégories", "Anticipé" and "Compte" share the
+ * same baseline whatever the icon is (SVG stroke or raster squirrel).
+ */
+.category-bar .inner .category-item {
+  display: flex !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  position: relative !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 4px 2px !important;
+  border-radius: 14px !important;
+  font-size: 10.5px !important;
+  overflow: hidden !important;
+  /* Immediate response: no double-tap-zoom wait, no grey tap flash. */
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.category-bar .inner .category-item .nav-icon {
+  display: block !important;
+  width: 22px !important;
+  height: 22px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  flex: 0 0 22px !important;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+ * The Compte squirrel is a raster mark sized 30px by header-polish.css with a
+ * more specific selector. That pushed the "Compte" label below the bar's
+ * clipped edge. Repeat the selector here so every slot shares one icon box.
+ */
+.category-bar .inner .category-item.profile-nav-button .nav-icon.profile-squirrel-icon {
+  width: 22px !important;
+  height: 22px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  flex: 0 0 22px !important;
+  background-size: contain !important;
+  background-position: center !important;
+  overflow: hidden !important;
+}
+
+.category-bar .inner .category-item.profile-nav-button {
+  margin-left: 0 !important;
+}
+
+/* The unread badge sits on the icon corner, never on the label. */
+.category-bar .inner .category-item.profile-nav-button .unread-messages-badge {
+  position: absolute !important;
+  top: 3px !important;
+  left: calc(50% + 6px) !important;
+  right: auto !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 1px 4px !important;
+  border-width: 1.5px !important;
+  font-size: 9px !important;
+}
+
+.category-bar .inner .category-item .nav-label {
+  display: block !important;
+  flex: 0 0 auto !important;
+  font-size: inherit !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  pointer-events: none;
+}
+
+@media (max-width: 359px) {
+  .category-bar .inner .category-item {
+    font-size: 9.5px !important;
+    gap: 2px !important;
+  }
+
+  .category-bar .inner .category-item .nav-icon,
+  .category-bar .inner .category-item.profile-nav-button .nav-icon.profile-squirrel-icon {
+    width: 18px !important;
+    height: 18px !important;
+    flex-basis: 18px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .category-bar .inner .category-item {
+    flex-direction: row !important;
+    gap: 6px !important;
+  }
+
+  .category-bar .inner .category-item.profile-nav-button .unread-messages-badge {
+    top: 2px !important;
+    left: auto !important;
+    right: 4px !important;
+  }
+}
+
+/*
+ * The calculator used to drop its bottom padding while its keyboard flag was
+ * set, so the last results slid under the bar. Keep the route's normal
+ * clearance unless the keyboard is really visible.
+ */
+html:not(.cid-soft-keyboard-open)
+  #matrixCalculatorPanel.matrix-calculator-panel {
+  padding-bottom: calc(
+    28px + var(--cid-nav-height) + var(--cid-nav-gap) +
+    env(safe-area-inset-bottom, 0px)
+  ) !important;
+}

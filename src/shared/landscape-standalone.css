@@ -1,0 +1,147 @@
+/*
+ * Installed PWA, landscape only.
+ *
+ * Portrait is the reference layout and is not touched here. When the app
+ * runs from the home screen and the phone is turned sideways, the visible
+ * height drops to ~300 px and two things broke:
+ *
+ *   - Tableaux crosses: the legacy landscape rule shrank the cross and its
+ *     numbers to 80 / 32 px, while the shared geometry still placed the
+ *     numbers from a 56 px box. The numbers landed 48 px outside a cross
+ *     that only had 12-30 px of margin, on top of the title and of the
+ *     www.cidmap.com footer.
+ *   - Croix nationale squares (Accueil, Croix, Anticipé) were sized from
+ *     the width and became taller than the screen.
+ *
+ * One height-driven scale fixes both: the number box used for positioning
+ * is the rendered number size, and the cross reserves that space above and
+ * below so the numbers never reach the title or the footer.
+ */
+@media all and (display-mode: standalone) and (orientation: landscape) {
+  :root {
+    /* Height left between the fixed header and the bottom navigation. */
+    --cid-landscape-visible-height: calc(
+      100vh - var(--cid-shell-header-height, 50px) - var(--cid-shell-footer-height, 56px)
+      - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+    );
+    --cid-landscape-cross: clamp(84px, 24vh, 150px);
+    --cid-landscape-number: clamp(26px, 8vh, 48px);
+  }
+
+  @supports (height: 100dvh) {
+    :root {
+      --cid-landscape-visible-height: calc(
+        100dvh - var(--cid-shell-header-height, 50px) - var(--cid-shell-footer-height, 56px)
+        - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+      );
+    }
+  }
+
+  /* --- Tableaux crosses --------------------------------------------- */
+
+  body.tableaux-active #tableauxViewContainer .container .cross {
+    --cross-number-box: var(--cid-landscape-number);
+    width: var(--cid-landscape-cross) !important;
+    height: var(--cid-landscape-cross) !important;
+    /* Room for the number above and below the arms, plus a gap. */
+    margin: calc(var(--cid-landscape-number) + 10px) auto !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .container .cross .cross-number {
+    width: var(--cid-landscape-number) !important;
+    height: var(--cid-landscape-number) !important;
+    font-size: calc(var(--cid-landscape-number) * .9) !important;
+    line-height: var(--cid-landscape-number) !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .container .title-text {
+    font-size: clamp(14px, 5vh, 22px) !important;
+    line-height: 1.15 !important;
+  }
+
+  /* Tables keep a legible, height-driven size instead of the 9-10 px
+     legacy landscape values. */
+  body.tableaux-active #tableauxViewContainer .color-table th,
+  body.tableaux-active #tableauxViewContainer .color-table td {
+    font-size: clamp(10px, 3.4vh, 14px) !important;
+    padding: clamp(2px, .8vh, 5px) clamp(2px, .6vw, 4px) !important;
+  }
+
+  /*
+   * The two-column card rules (cidgroup-bridge.css, min-width: 561px) use
+   * `.portfolio-x > .container:nth-child(2) .cross` and reset the cross
+   * margin to 42px, which outranked the rules above: the bottom number then
+   * sat on the www.cidmap.com footer. Repeat the contract with a stronger
+   * selector (html + nth-child + doubled class) so landscape always wins.
+   */
+  html body.tableaux-active #tableauxViewContainer .container:nth-child(n) .cross.cross {
+    --cross-number-box: var(--cid-landscape-number);
+    --tableaux-cross-vertical-gap: 4px;
+    --tableaux-cross-horizontal-gap: 6px;
+    width: var(--cid-landscape-cross) !important;
+    height: var(--cid-landscape-cross) !important;
+    margin: calc(var(--cid-landscape-number) + 12px) auto !important;
+    flex: 0 0 auto !important;
+  }
+
+  html body.tableaux-active #tableauxViewContainer .container:nth-child(n) .cross .cross-number.cross-number {
+    width: var(--cid-landscape-number) !important;
+    height: var(--cid-landscape-number) !important;
+    font-size: calc(var(--cid-landscape-number) * .9) !important;
+    line-height: var(--cid-landscape-number) !important;
+  }
+
+  /* The legacy landscape rule fixed the lines at 60 px while the cross now
+     follows the height: keep the original proportional arms (the
+     Intuition/Oracle variants keep their own, more specific lengths). */
+  :where(body.tableaux-active #tableauxViewContainer) .cross > .cross-line-vertical {
+    height: 75%;
+    top: 12.5%;
+  }
+
+  :where(body.tableaux-active #tableauxViewContainer) .cross > .cross-line-horizontal {
+    width: 75%;
+  }
+
+  /* Titles, dates and signatures keep a clean gap from the numbers. */
+  html body.tableaux-active #tableauxViewContainer .container:nth-child(n) .title-text {
+    font-size: clamp(13px, 4.6vh, 20px) !important;
+    line-height: 1.15 !important;
+    margin-block: 4px 6px !important;
+  }
+
+  html body.tableaux-active #tableauxViewContainer .container:nth-child(n) .site-url {
+    position: relative !important;
+    margin-top: 6px !important;
+    font-size: clamp(9px, 3vh, 12px) !important;
+  }
+
+  html body.tableaux-active #tableauxViewContainer .container:nth-child(n) .numbers {
+    font-size: clamp(18px, 7vh, 30px) !important;
+    letter-spacing: clamp(1px, .5vw, 3px) !important;
+  }
+
+  /* --- Croix nationale squares --------------------------------------- */
+
+  /*
+   * Cap the square to the visible height. The live geometry
+   * (cross-responsive.js) recomputes --cross-scale from the new width, so
+   * the digits, date and footer scale with it and keep their positions.
+   */
+  #cid-home-feed .cid-fb-cross-slot,
+  #croixViewContainer #croixViewCurrentCross,
+  #croixViewContainer .cid-croix-history-cross-slot,
+  .anticipation-cross-canonical-slot {
+    width: min(100%, var(--cid-landscape-visible-height) - 16px) !important;
+    max-width: min(100%, var(--cid-landscape-visible-height) - 16px) !important;
+    margin-inline: auto !important;
+  }
+
+  /* The footer is sized from the viewport width (2.3vw) everywhere else,
+     which overflows a height-capped square: follow the square instead, with
+     the same text/square ratio as in portrait. */
+  #redCross .redCrossFooter,
+  #redCrossClone .redCrossFooter {
+    font-size: clamp(7px, calc(10px * var(--cross-scale, 1)), 12px) !important;
+  }
+}
